@@ -1,16 +1,17 @@
 package fstore
 
 import (
-	"cloud.google.com/go/firestore"
 	"context"
-	firebase "firebase.google.com/go"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/api/iterator"
-	"gopkg.in/oauth2.v3"
-	"gopkg.in/oauth2.v3/models"
 	"log"
 	"os"
 	"testing"
+
+	"cloud.google.com/go/firestore"
+	firebase "firebase.google.com/go"
+	"github.com/go-oauth2/oauth2/v4"
+	"github.com/go-oauth2/oauth2/v4/models"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/api/iterator"
 )
 
 var c *firestore.Client
@@ -40,8 +41,8 @@ func TestStoreClient(t *testing.T) {
 	client := New(c, "tests")
 	type holder struct {
 		key string
-		get func(string) (oauth2.TokenInfo, error)
-		del func(string) error
+		get func(context.Context, string) (oauth2.TokenInfo, error)
+		del func(context.Context, string) error
 	}
 	tokens := map[*models.Token]holder{
 		{Access: "access"}:   {key: "access", get: client.GetByAccess, del: client.RemoveByAccess},
@@ -49,27 +50,29 @@ func TestStoreClient(t *testing.T) {
 		{Refresh: "refresh"}: {key: "refresh", get: client.GetByRefresh, del: client.RemoveByRefresh},
 	}
 	for i, h := range tokens {
-		err := client.Create(i)
+		ctx := context.Background()
+
+		err := client.Create(ctx, i)
 		assert.Nil(t, err)
 
-		tok, err := h.get(h.key)
+		tok, err := h.get(ctx, h.key)
 		assert.Nil(t, err)
 		assert.Equal(t, i, tok)
 
-		err = h.del(h.key)
+		err = h.del(ctx, h.key)
 		assert.Nil(t, err)
 
-		_, err = h.get(h.key)
+		_, err = h.get(ctx, h.key)
 		assert.NotNil(t, err)
 
-		err = h.del(h.key)
+		err = h.del(ctx, h.key)
 		assert.Nil(t, err)
 	}
 }
 
 func TestNoDocument(t *testing.T) {
 	client := New(c, "tests")
-	info, err := client.GetByRefresh("whoops")
+	info, err := client.GetByRefresh(context.Background(), "whoops")
 	assert.Nil(t, info)
 	assert.Equal(t, iterator.Done, err)
 }

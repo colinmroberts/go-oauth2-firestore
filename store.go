@@ -1,12 +1,14 @@
 package fstore
 
 import (
-	"cloud.google.com/go/firestore"
+	"context"
 	"errors"
-	"gopkg.in/oauth2.v3"
-	"gopkg.in/oauth2.v3/models"
 	"reflect"
 	"time"
+
+	"cloud.google.com/go/firestore"
+	"github.com/go-oauth2/oauth2/v4"
+	"github.com/go-oauth2/oauth2/v4/models"
 )
 
 const (
@@ -35,7 +37,7 @@ type client struct {
 	c *store
 }
 
-func (f *client) Create(info oauth2.TokenInfo) error {
+func (f *client) Create(ctx context.Context, info oauth2.TokenInfo) error {
 	t, err := token(info)
 	if err != nil {
 		return err
@@ -43,27 +45,27 @@ func (f *client) Create(info oauth2.TokenInfo) error {
 	return f.c.Put(t)
 }
 
-func (f *client) RemoveByCode(code string) error {
+func (f *client) RemoveByCode(ctx context.Context, code string) error {
 	return f.c.Del(keyCode, code)
 }
 
-func (f *client) RemoveByAccess(access string) error {
+func (f *client) RemoveByAccess(ctx context.Context, access string) error {
 	return f.c.Del(keyAccess, access)
 }
 
-func (f *client) RemoveByRefresh(refresh string) error {
+func (f *client) RemoveByRefresh(ctx context.Context, refresh string) error {
 	return f.c.Del(keyRefresh, refresh)
 }
 
-func (f *client) GetByCode(code string) (oauth2.TokenInfo, error) {
+func (f *client) GetByCode(ctx context.Context, code string) (oauth2.TokenInfo, error) {
 	return f.c.Get(keyCode, code)
 }
 
-func (f *client) GetByAccess(access string) (oauth2.TokenInfo, error) {
+func (f *client) GetByAccess(ctx context.Context, access string) (oauth2.TokenInfo, error) {
 	return f.c.Get(keyAccess, access)
 }
 
-func (f *client) GetByRefresh(refresh string) (oauth2.TokenInfo, error) {
+func (f *client) GetByRefresh(ctx context.Context, refresh string) (oauth2.TokenInfo, error) {
 	return f.c.Get(keyRefresh, refresh)
 }
 

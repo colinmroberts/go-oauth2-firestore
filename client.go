@@ -1,13 +1,14 @@
 package fstore
 
 import (
-	"cloud.google.com/go/firestore"
 	"context"
 	"errors"
-	"google.golang.org/api/iterator"
-	"gopkg.in/oauth2.v3/models"
 	"sync"
 	"time"
+
+	"cloud.google.com/go/firestore"
+	"github.com/go-oauth2/oauth2/v4/models"
+	"google.golang.org/api/iterator"
 )
 
 type store struct {
